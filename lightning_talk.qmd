@@ -1,0 +1,338 @@
+---
+title: "<span style='color:darkblue'>Undergraduate data science education</span>"
+author: "<span style='color:maroon'>Mine Dogucu, Sinem Demirci, <b>Harry Bendekgey</b>, <br> Federica Zoe Ricci, Catalina Medina <br> <br> UC Irvine and Cal Poly San Luis Obispo</span>"
+subtitle: "<span style='color:darkblue'>Who has the microphone and what are they saying?</span>"
+footer: "github.com/mdogucu/comp-data-sci"
+format: 
+  revealjs:
+    slide-number: true
+    incremental: true
+    theme: ["style.scss"]
+---
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(tidyverse)
+library(here)
+library(knitr)
+library(kableExtra)
+all_reviews <- read_csv(
+  here("data", "all_reviews.csv"), 
+  show_col_types = FALSE
+)
+why_not_keep <- data.frame(sort(table(all_reviews$why_not_keep), dec=TRUE))
+
+excluded <- data.frame(
+  n_docs_reviewed = nrow(all_reviews),
+  n_docs_kept = all_reviews |> 
+    filter(keep == TRUE) |> 
+    nrow(),
+  n_docs_excluded_prelim = all_reviews |> 
+    filter(keep == FALSE & prelim_review == TRUE) |> 
+    nrow(),
+  n_docs_excluded_in_depth = all_reviews |> 
+    filter(keep == FALSE & prelim_review == FALSE) |> 
+    nrow(),
+  n_docs_excluded_total = all_reviews |> 
+    filter(keep == FALSE) |> 
+    nrow(),
+  n_docs_excluded_format = all_reviews |> 
+    filter(keep == FALSE) |> 
+    filter(why_not_keep %in% c("panel",
+                               "complete conference proceedings",
+                               "not in english",
+                               "retracted",
+                               "poster session summary with multiple posters",
+                               "duplicate paper",
+                               "interview",
+                               "note from journal's editor",
+                               "poster",
+                               "dissertation abstract",
+                               "doctoral consortium abstract",
+                               "introduction to a journal's special issue",
+                               "letter to journal editor",
+                                "meeting highlights",
+                               "presentation summary")) |> 
+    nrow(),
+  n_docs_graduate = all_reviews |>
+    filter(why_not_keep %in% c("graduate",
+                               "postgraduate")) |> 
+    nrow(),
+  n_docs_k_12 = all_reviews |>
+    filter(why_not_keep == "k-12") |> 
+    nrow(),
+  n_docs_high_school = all_reviews |>
+    filter(why_not_keep == "high school") |> 
+    nrow(),
+  n_docs_mid_school = all_reviews |>
+    filter(why_not_keep == "middle school") |> 
+    nrow(),  
+  n_docs_mid_high_school = all_reviews |>
+    filter(why_not_keep == "middle school and high school") |> 
+    nrow(),   
+  n_docs_elem_school = all_reviews |>
+    filter(why_not_keep == "elementary school") |> 
+    nrow()    
+) 
+
+```
+
+::: {.smaller}
+
+## Overview
+
+
+As the demand for data science education grows, so does the body of research studying it. We ask:
+
+<br> 
+
+<b> <span style='color:maroon'> Who has the microphone: </span> </b> What disciplines and institutions are represented in data science research?
+
+<br>
+
+<b> <span style='color:maroon'> What are they saying: </span> </b> What content areas are covered? How do researchers answer their research questions?
+
+. . .
+
+<br>`r fontawesome::fa(name = "bullseye")` 1: specify current evidence and knowledge gaps in undergraduate data science education
+
+. . .
+
+<br>`r fontawesome::fa(name = "bullseye")` 2: inform policymakers and data science educators/practitioners about the present status of data science education research
+
+. . .
+
+<br>`r fontawesome::fa(name = "magnifying-glass")` We conducted a systematic literature review to answer these questions. All of our processes and results can be found in [our Github repository](https://github.com/mdogucu/comp-data-sci){target="_blank"}.
+
+::: 
+
+## Methods 
+:::{.font75}
+:::{.pull-left-25}
+S  
+T  
+E  
+P 
+
+1
+:::
+
+:::
+
+:::{.pull-right-75}
+
+- We searched six databases for publications with "data science education" (in quotes) in the title, abstract, or keywords. 
+
+- Data was collected in December 2022, totaling `r nrow(all_reviews)` publications.
+
+- In the following steps, we excluded publications which were not relevant to <b> <span style='color:maroon'> undergraduate</span></b> data science education, or those which were not articles (e.g. poster, panel)
+
+:::
+
+## Methods 
+
+:::{.font75}
+:::{.pull-left-25}
+S  
+T  
+E  
+P 
+
+2
+:::
+
+:::
+
+:::{.pull-right-75}
+
+- To filter papers that met our exclusion criteria, we conducted a preliminary analysis by reading the ABSTRACT of all `r nrow(all_reviews)` studies.
+
+- Each publication was discussed by at least two reviewers whether to be included or excluded.
+
+- We had `r excluded$n_docs_reviewed - excluded$n_docs_excluded_prelim` publications remaining at the end of this step.
+
+
+:::
+
+## Methods 
+
+:::{.font75}
+:::{.pull-left-25}
+S  
+T  
+E  
+P 
+
+3
+:::
+
+:::
+
+:::{.pull-right-75}
+
+- Each of the remaining `r excluded$n_docs_reviewed - excluded$n_docs_excluded_prelim` publications was read in full by at least 2 reviewers.
+
+- More publications were excluded at this stage for formatting or content reasons, leaving `r excluded$n_docs_kept` publications that met our criteria.
+
+- Attributes of each publication were collected by the 2 reviewers, with disagreements resolved by the entire group.
+
+- We report the landsscape of these 77 papers.
+
+:::
+
+## Results: Who Has the Microphone
+
+Of the 77 publications analyzed, 45 include authors from the institutions in the USA. The next most prominent country was the Netherlands, with 8 papers including affiliated authors.
+
+. . .
+
+<br> 22 publications represented multidisciplinary courses or programs. The 3 most prominent disciplines were data science itself (18) Computer Science (13) and statistics (4).
+
+. . .
+
+<br> 51 of the 77 publications were open access!
+
+## Results: What are They Saying
+
+```{r table-research_question}
+#| echo: false
+research.question <- all_reviews |> 
+  filter(!is.na(content_area)) |>
+  mutate(research_question = as.logical(research_question)) |>
+  mutate(qual_data = data_collection_type == "qual") |> 
+  mutate(quant_data = data_collection_type == "quant") |> 
+  mutate(mixed_data = data_collection_type == "mixed") |>
+  mutate(any_data = data_collection_type %in% c("qual", "quant", "mixed")) |> 
+  group_by(content_area) |> 
+  summarize(Total = n(),
+            With_research_question = sum(research_question, na.rm = TRUE),
+            Without_research_question = sum(!research_question, na.rm = TRUE),
+            With_any_data = sum(!any_data, na.rm = TRUE),
+            With_qual_data = sum(qual_data, na.rm = TRUE), 
+            With_quant_data = sum(quant_data, na.rm = TRUE),
+            With_mixed_data = sum(mixed_data, na.rm = TRUE))
+
+expanded.contents <- strsplit(as.character(research.question$content_area), " and ")
+
+lens <- map(expanded.contents, length)
+
+rq.df <- research.question[rep(seq_len(nrow(research.question)), lens), ]
+
+rq.df$content_area <- unlist(expanded.contents) 
+  
+rq.df |>  
+  mutate(content_area = str_to_title(content_area)) |> 
+  group_by(content_area) |>
+  summarize(Total = sum(Total), )|>
+  arrange(desc(Total)) |>
+  kbl(booktabs = "TRUE", col.names = c("Content Area",
+    "Total"))
+
+```
+
+
+## Results
+
+### Research Questions
+
+```{r}
+research.question |>
+  mutate(content_area = str_to_title(content_area)) |> 
+  summarize(with_rq = sum(With_research_question), 
+            without_rq = sum(Without_research_question))|>
+  kbl(booktabs = "TRUE", col.names = c("With RQ",
+                                       "Without RQ"))
+```
+
+### Data
+
+```{r}
+research.question |>
+  mutate(content_area = str_to_title(content_area)) |> 
+  summarize(qual = sum(With_qual_data), 
+            quant = sum(With_quant_data),
+            mixed = sum(With_mixed_data),
+            none = sum(With_any_data)) |>
+  kbl(booktabs = "TRUE", col.names = c("Qualitative",
+                                       "Quantitative",
+                                       "Mixed",
+                                       "None"))
+```
+
+## Research Questions
+
+
+```{r}
+#| echo: false
+
+rq.df_full <- rq.df |>  
+  mutate(content_area = str_to_title(content_area)) |> 
+  group_by(content_area) |>
+  summarize(Total = sum(Total), 
+            With_research_question = sum(With_research_question), 
+            Without_research_question = sum(Without_research_question)) |>
+  arrange(desc(Total)) %>%
+  tidyr::pivot_longer(With_research_question:Without_research_question) 
+
+rq.df_full$content_area <- ifelse(rq.df_full$content_area == "Review Of Current State Of Data Science Education", " Review Of Current State Of DSE", rq.df_full$content_area)   
+
+rq.df_full$content_area <- factor(rq.df_full$content_area, 
+                                  levels = unique(rq.df_full$content_area[order(rq.df_full$Total, decreasing=TRUE)]))
+
+rq.df_full$name <- ifelse(rq.df_full$name == "With_research_question", "Yes", "No")   
+
+
+rq.df_full %>% #213, 210, 197
+  ggplot(aes(fill = name, y = value, x = content_area)) +
+  geom_bar(position = "stack", stat = "identity") +
+  theme(axis.text.x = element_text(angle = 60, vjust = 1., hjust=1.), plot.margin = margin(0,0,0,1, "cm")) +
+  labs(x = element_blank()) + labs(y = "Number of Publications") +
+  theme(panel.background = element_rect(fill = rgb(213/256, 210/256, 197/256)),
+        legend.background = element_rect(fill = rgb(213/256, 210/256, 197/256)),
+        plot.background = element_rect(color=rgb(213/256, 210/256, 197/256), linewidth=3, fill = rgb(213/256, 210/256, 197/256)),
+        panel.grid = element_blank(), legend.margin=margin(r = 1., unit='cm')) + 
+  guides(fill=guide_legend(title="Research Question?"))
+
+```
+
+## Knowledge Gaps
+
+<br>1. A disproportionately high percentage of studies lack empirical data.
+
+. . .
+
+<br>2. Reproducibility is one of the potential challenges in undergraduate data science education research.
+
+. . .
+
+<br>3. Not all Data Science disciplines contribute equally to the overall body of knowledge.
+
+
+## Recommendations
+
+<br><b>Prioritize</b> investments in empirical studies
+
+. . .
+
+<br> <b>Diversify</b> research efforts to enrich the spectrum of studies.
+
+. . .
+
+<br> Encourage scholars in <b>all data science fields</b> to contribute more to publications.
+
+## Results: Reproducibility
+
+Our final results can be found in [our Github repository](https://github.com/mdogucu/comp-data-sci){target="_blank"} along with all steps of our data analysis. 
+
+<br> You can filter the dataset to find relevant publications, e.g. <span style='color:maroon'>Course Examples</span> in <span style='color:maroon'>Statistics</span> departments or <span style='color:maroon'>Education Technology</span> papers which collected <span style='color:maroon'>qualitative</span> data. 
+
+# THANK YOU 
+
+We will be hosting a breakout session on June 12th titled 
+"Building Data Science Education Research Plan for Teacher-Scholars". 
+We would love to see you there!
+
+<hr>
